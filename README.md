@@ -83,15 +83,12 @@ Menggunakan library `Surprise`, kami membangun model SVD (Singular Value Decompo
 
 Menggunakan fitur `Book-Title` dan `Book-Author`, dilakukan TF-IDF vectorization dan cosine similarity untuk merekomendasikan buku yang mirip.
 
-#### Contoh Hasil Rekomendasi (Top-5)
+#### Contoh Hasil Rekomendasi
 
 | No | Judul Buku                |
 |----|---------------------------|
-| 1  | Harry Potter and the Sorcerer's Stone |
-| 2  | Harry Potter and the Chamber of Secrets |
-| 3  | Harry Potter and the Prisoner of Azkaban |
-| 4  | Harry Potter and the Goblet of Fire |
-| 5  | Harry Potter and the Order of the Phoenix |
+| 1  | El Vendedor De Noticias (Espasa Juvenil) |
+| 2  | Vieja Sirena, La |
 
 ---
 
@@ -107,7 +104,7 @@ $$
 
 Hasil:
 
-- **RMSE = 1.6400**
+- **RMSE = 1.6394**
 
 Nilai ini menunjukkan deviasi rata-rata prediksi sekitar 3.5 poin dari rating aktual.
 
@@ -117,7 +114,7 @@ Menggunakan metrik `Precision@5` dan `Recall@5` pada subset data pengguna.
 
 Hasil:
 
-- **Precision@5 = 0.7067**
+- **Precision@5 = 0.7066**
 - **Recall@5 = 0.7028**
 
 ---

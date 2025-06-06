@@ -110,11 +110,11 @@ Menggunakan library `Surprise`, kami membangun model SVD untuk memprediksi ratin
 
 | No | Judul Buku                | Penulis            |
 | -- | ------------------------- | ------------------ |
-| 1  | The Secret of Platform 13 | Eva Ibbotson       |
-| 2  | Becoming                  | Michelle Obama     |
-| 3  | Holes                     | Louis Sachar       |
-| 4  | Coraline                  | Neil Gaiman        |
-| 5  | Ella Enchanted            | Gail Carson Levine |
+| 1  | Harry Potter and the Sorcerer's Stone | J. K. Rowling       |
+| 2  | The Cat in the Hat                | Dr. Seuss     |
+| 3  | The Return of the King                      | The Return of the King        |
+| 4  | Harry Potter and the Prisoner of Azkaban (Book 3)	                 | J. K. Rowling        |
+| 5  | Harry Potter and the Sorcerer's Stone (Book 1)            |J. K. Rowling|
 
 ### b. Model Content-Based Filtering
 

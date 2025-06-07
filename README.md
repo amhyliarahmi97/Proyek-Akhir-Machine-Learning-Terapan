@@ -31,152 +31,106 @@ Sistem ini diharapkan mampu meningkatkan pengalaman pengguna dengan merekomendas
 
 ## 3. Data Understanding
 
-Dataset yang digunakan terdiri dari tiga file utama:
+Dataset terdiri dari tiga file utama:
+- `BX-Books.csv` (10.000 baris, 8 kolom)
+- `BX-Users.csv` (278.858 baris, 3 kolom)
+- `BX-Book-Ratings.csv` (1.149.780 baris, 3 kolom)
 
-* `Books.csv` : berisi informasi detail buku.
-* `Users.csv` : berisi informasi pengguna.
-* `Ratings.csv` : berisi rating yang diberikan pengguna terhadap buku.
+### Penjelasan Fitur
 
-### Ringkasan Dataset:
+- `isbn`: ID unik buku
+- `title`: Judul buku
+- `author`: Penulis
+- `year`: Tahun terbit
+- `publisher`: Penerbit
+- `image_s/m/l`: URL gambar (tidak digunakan)
+- `user_id`: ID pengguna
+- `location`: Lokasi pengguna
+- `age`: Usia pengguna
+- `rating`: Skor 0–10
 
-* Books.csv: **10.000 baris**, 8 kolom
-* Ratings.csv: **1.149.780 baris**, 3 kolom
-* Users.csv: **278.858 baris**, 3 kolom
-
-### Penjelasan Fitur:
-
-* **ISBN**: Kode unik setiap buku
-* **Book-Title**: Judul buku
-* **Book-Author**: Nama penulis buku
-* **Year-Of-Publication**: Tahun terbit
-* **Publisher**: Nama penerbit buku
-* **Image-URL-S/M/L**: URL gambar cover buku dalam ukuran kecil/sedang/besar (tidak digunakan dalam model)
-* **User-ID**: ID pengguna
-* **Location**: Lokasi pengguna dalam format kota, negara bagian, negara
-* **Age**: Usia pengguna
-* **Book-Rating**: Skor yang diberikan pengguna untuk buku (skala 0–10)
-
-> 📅 Catatan: Kolom `age` mengandung missing values dan nilai tidak valid (seperti 0 atau >100), sehingga perlu dibersihkan pada tahap data preparation.
+### Insight Tambahan
+- Kolom `age` mengandung nilai hilang dan outlier (misal usia <5 atau >100).
+- Rating dengan nilai 0 dianggap implisit dan tidak digunakan dalam pelatihan model.
 
 ---
 
 ## 4. Data Preparation
 
-### a. Penyesuaian Kolom dan Pembersihan Awal
+### a. Pembersihan Data
+- Menghapus duplikat ISBN pada data buku.
+- Memfilter buku dengan tahun terbit antara 1900–2025.
+- Menghapus kolom gambar yang tidak digunakan.
+- Menghapus rating eksplisit bernilai 0.
 
-* Menstandarkan nama kolom agar seragam.
-* Menghapus duplikasi pada kolom `ISBN`
-* Menghapus kolom gambar (`Image-URL-S`, `Image-URL-M`, `Image-URL-L`) karena tidak relevan
-* Memfilter data `Year-Of-Publication` agar hanya antara tahun 1900 dan 2025
-
-### b. Filter Rating Eksplisit
-
-Hanya rating eksplisit yang digunakan (rating > 0) untuk memastikan interaksi pengguna benar-benar merepresentasikan preferensi:
-
-```python
-ratings = ratings[ratings['Book-Rating'] > 0]
-```
-
-### c. Penanganan Missing Values untuk Content-Based
-
-Untuk fitur `title` dan `author`, nilai kosong diganti dengan string kosong:
-
-```python
-books['title'] = books['title'].fillna('')
-books['author'] = books['author'].fillna('')
-```
-
-### d. Pembuatan Fitur Gabungan
-
-Gabungan `title` dan `author` digunakan sebagai input vectorisasi TF-IDF:
-
-```python
-books['combined_features'] = books['title'] + ' ' + books['author']
-```
-
-### e. TF-IDF Vectorization
-
-Mengubah teks `combined_features` menjadi matriks numerik menggunakan TF-IDF, dilanjutkan dengan cosine similarity untuk mengukur kemiripan antar buku.
+### b. Persiapan untuk Content-Based Filtering
+- Mengisi nilai kosong di kolom `title` dan `author` dengan string kosong.
+- Membuat fitur `combined_features` dari gabungan `title` dan `author`.
+- Menggunakan TF-IDF vectorizer untuk mengubah teks menjadi fitur numerik.
 
 ---
 
 ## 5. Modeling
 
-### a. Model SVD (Collaborative Filtering)
+### a. Collaborative Filtering (SVD)
 
-Menggunakan library `Surprise`, kami membangun model SVD untuk memprediksi rating dari user terhadap buku yang belum dirating. Dataset dibagi menjadi train dan test set, kemudian model dilatih dan dievaluasi.
+Menggunakan library `Surprise`, model dilatih pada data eksplisit dengan teknik SVD. Proses meliputi:
+- Split data 80:20
+- Latih model
+- Evaluasi menggunakan RMSE
+- Berikan rekomendasi untuk user tertentu
 
-#### Contoh Hasil Rekomendasi Top-5 (User ID: 276729)
+#### Contoh Output Rekomendasi (Top-5)
 
-| No | Judul Buku                | Penulis            |
-| -- | ------------------------- | ------------------ |
-| 1  | Harry Potter and the Sorcerer's Stone | J. K. Rowling       |
-| 2  | The Cat in the Hat                | Dr. Seuss     |
-| 3  | The Return of the King                      | The Return of the King        |
-| 4  | Harry Potter and the Prisoner of Azkaban (Book 3)	                 | J. K. Rowling        |
-| 5  | Harry Potter and the Sorcerer's Stone (Book 1)            |J. K. Rowling|
+| No | Judul Buku                              |
+|----|------------------------------------------|
+| 1  | The Lovely Bones: A Novel	                                |
+| 2  | A Prayer for Owen Meany                           |
+| 3  | The Return of the King       |
+| 4  | Harry Potter and the Prisoner of Azkaban (Book 3)                     |
+| 5  | Voyager                       |
 
-### b. Model Content-Based Filtering
+### b. Content-Based Filtering
 
-Menggunakan fitur `Book-Title` dan `Book-Author`, kami melakukan:
+Langkah-langkah:
+- Gabungkan judul dan penulis
+- TF-IDF vectorizer → Cosine Similarity
+- Cari buku paling mirip berdasarkan judul
 
-* TF-IDF Vectorization terhadap fitur gabungan
-* Cosine Similarity antar buku
-* Rekomendasi dilakukan berdasarkan kemiripan judul input dengan buku lain
+#### Contoh Output Rekomendasi
 
-#### Contoh Hasil Rekomendasi
+Untuk judul **Harry Potter and the Chamber of Secrets (Book 2)**:
 
-| No | Judul Buku                                        | Penulis             |
-| -- | ------------------------------------------------- | ------------------- |
-| 1  | Harry Potter and the Sorcerer's Stone (Book 1)    | J.K. Rowling        |
-| 2  | Harry Potter and the Prisoner of Azkaban (Book 3) | J.K. Rowling        |
-| 3  | Eragon                                            | Christopher Paolini |
-| 4  | Inkheart                                          | Cornelia Funke      |
-| 5  | Artemis Fowl                                      | Eoin Colfer         |
+| No | Judul Buku                                 |
+|----|---------------------------------------------|
+| 1  | Harry Potter and the Chamber of Secrets (Book 2)     |
+| 2  | Harry Potter and the Chamber of Secrets (Book 2)    |
+| 3  | Harry Potter and the Goblet of Fire (Book 4)         |
+| 4  | Harry Potter and the Goblet of Fire (Book 4)   |
+| 5  | Harry Potter and the Order of the Phoenix (Book 5)      |
 
 ---
 
 ## 6. Evaluation
 
-### a. Evaluasi Collaborative Filtering (SVD)
+### a. Evaluasi SVD
 
-Model dievaluasi menggunakan metrik RMSE (Root Mean Square Error):
+Metrik evaluasi:
+- **RMSE**: 1.6399
+- **Precision@5**: 0.7062
+- **Recall@5**: 0.7025
 
-$$
-\text{RMSE} = \sqrt{ \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 }
-$$
+### b. Evaluasi Content-Based Filtering
 
-* **RMSE = 1.6394**
-
-### b. Precision\@K dan Recall\@K (SVD)
-
-Hasil evaluasi pada testset untuk `k = 5`:
-
-* **Precision\@5 = 0.7066**
-* **Recall\@5 = 0.7028**
-
-### c. Evaluasi Content-Based Filtering
-
-Karena Content-Based tidak menghasilkan rating prediksi, maka evaluasi dilakukan secara kualitatif. Contohnya:
-
-> Jika input judul "Harry Potter and the Chamber of Secrets", sistem merekomendasikan judul-judul serupa dari seri yang sama atau genre sejenis (fantasy).
-
-Untuk ke depannya, evaluasi kuantitatif dapat dilakukan dengan user study atau implicit feedback.
+Evaluasi dilakukan secara manual berdasarkan kemiripan konten. Model ini cocok untuk pengguna baru (cold-start problem) karena tidak bergantung pada data rating pengguna lain.
 
 ---
 
 ## 7. Kesimpulan
 
-* Model SVD efektif untuk pengguna aktif dengan riwayat rating.
-* Content-Based Filtering sangat berguna untuk pengguna baru atau ketika data rating terbatas.
-* Evaluasi menunjukkan hasil memuaskan dengan Precision dan Recall yang cukup tinggi.
+- **Model SVD** efektif untuk pengguna dengan riwayat interaksi.
+- **Content-Based Filtering** cocok untuk pengguna baru.
+- Evaluasi menunjukkan bahwa sistem rekomendasi memberikan hasil relevan.
 
 ---
 
-## 8. Saran
-
-* Kombinasi kedua pendekatan (hybrid model) berpotensi meningkatkan kualitas rekomendasi.
-* Menambahkan fitur tambahan seperti genre dan sinopsis buku dapat meningkatkan kualitas model Content-Based.
-* Diperlukan sistem evaluasi lebih komprehensif menggunakan data aktual dari pengguna.
-
----

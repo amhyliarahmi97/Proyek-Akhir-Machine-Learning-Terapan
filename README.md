@@ -25,6 +25,14 @@ Proyek ini bertujuan untuk membangun sistem rekomendasi buku berdasarkan data ra
 * **Collaborative Filtering** dengan algoritma SVD (Singular Value Decomposition)
 * **Content-Based Filtering** dengan pendekatan TF-IDF dan cosine similarity
 
+### Problem Statements
+1. Pengguna kesulitan menemukan buku yang sesuai dengan minat mereka karena banyaknya pilihan.
+2. Tidak semua pengguna memberikan ulasan secara eksplisit, sehingga perlu metode yang mampu mengatasi data yang sparse.
+
+### Goals
+- Membangun sistem rekomendasi yang dapat memberikan saran buku kepada pengguna berdasarkan preferensi.
+- Menyediakan hasil rekomendasi Top-N untuk masing-masing pengguna.
+
 Sistem ini diharapkan mampu meningkatkan pengalaman pengguna dengan merekomendasikan buku yang relevan dengan preferensi mereka.
 
 ---
@@ -50,6 +58,8 @@ Dataset terdiri dari tiga file utama:
 - `rating`: Skor 0–10
 
 ### Insight Tambahan
+- Penulis paling populer adalah Stephen King (68 buku).
+- Penerbit paling umum adalah Ballantine Books (300 buku).
 - Kolom `age` mengandung nilai hilang dan outlier (misal usia <5 atau >100).
 - Rating dengan nilai 0 dianggap implisit dan tidak digunakan dalam pelatihan model.
 
@@ -58,21 +68,30 @@ Dataset terdiri dari tiga file utama:
 ## 4. Data Preparation
 
 ### a. Pembersihan Data
-- Menghapus duplikat ISBN pada data buku.
-- Memfilter buku dengan tahun terbit antara 1900–2025.
-- Menghapus kolom gambar yang tidak digunakan.
-- Menghapus rating eksplisit bernilai 0.
+- Menghapus nilai duplikat isbn.
+- Memfilter year agar berada di rentang valid (1900–2025).
+- Menghapus kolom image_s, image_m, image_l karena tidak digunakan.
+- Menghapus rating bernilai 0 (implicit rating) dari proses pelatihan model.
+- Mengganti nilai kosong pada kolom title dan author dengan string kosong.
 
 ### b. Persiapan untuk Content-Based Filtering
-- Mengisi nilai kosong di kolom `title` dan `author` dengan string kosong.
-- Membuat fitur `combined_features` dari gabungan `title` dan `author`.
-- Menggunakan TF-IDF vectorizer untuk mengubah teks menjadi fitur numerik.
+- Mengganti nama kolom pada ratings menjadi user_id, isbn, rating
+- Menggunakan modul Surprise
+- Menginisialisasi objek Reader dengan rentang nilai rating.
+- Menggunakan Dataset.load_from_df untuk membentuk dataset dari DataFrame.
+- Membagi data menjadi data latih dan data uji menggunakan train_test_split.
 
 ---
 
 ## 5. Modeling
 
 ### a. Collaborative Filtering (SVD)
+
+Metode **Collaborative Filtering** memanfaatkan pola interaksi antara pengguna dan item.  
+Dengan algoritma **SVD (Singular Value Decomposition)**, sistem mencoba memprediksi rating yang akan diberikan pengguna terhadap buku yang belum dibaca.
+
+- Algoritma: SVD dari `Surprise`.
+- Output: Top-N rekomendasi buku berdasarkan User ID.
 
 Menggunakan library `Surprise`, model dilatih pada data eksplisit dengan teknik SVD. Proses meliputi:
 - Split data 80:20
@@ -84,30 +103,22 @@ Menggunakan library `Surprise`, model dilatih pada data eksplisit dengan teknik 
 
 | No | Judul Buku                              |
 |----|------------------------------------------|
-| 1  | The Lovely Bones: A Novel	                                |
-| 2  | A Prayer for Owen Meany                           |
-| 3  | The Return of the King       |
-| 4  | Harry Potter and the Prisoner of Azkaban (Book 3)                     |
-| 5  | Voyager                       |
+| 1  | Lies and the Lying Liars Who Tell Them	                                |
+| 2  | The Fellowship of the Ring                           |
+| 3  | Snow Falling on Cedars       |
+| 4  | The Return of the King                     |
+| 5  | Harry Potter and the Sorcerer's Stone (Book 1)                       |
 
-### b. Content-Based Filtering
+### Content-Based Filtering (CBF)
+Content-Based Filtering merekomendasikan buku berdasarkan kemiripan kontennya, dalam hal ini berdasarkan judul buku.
 
-Langkah-langkah:
-- Gabungkan judul dan penulis
-- TF-IDF vectorizer → Cosine Similarity
-- Cari buku paling mirip berdasarkan judul
+- Representasi konten: TF-IDF dari judul buku.
+- Pengukuran kemiripan: Cosine Similarity antar vektor TF-IDF.
+- Output: Buku-buku yang mirip dengan buku input.
 
-#### Contoh Output Rekomendasi
-
-Untuk judul **Harry Potter and the Chamber of Secrets (Book 2)**:
-
-| No | Judul Buku                                 |
-|----|---------------------------------------------|
-| 1  | Harry Potter and the Chamber of Secrets (Book 2)     |
-| 2  | Harry Potter and the Chamber of Secrets (Book 2)    |
-| 3  | Harry Potter and the Goblet of Fire (Book 4)         |
-| 4  | Harry Potter and the Goblet of Fire (Book 4)   |
-| 5  | Harry Potter and the Order of the Phoenix (Book 5)      |
+**Contoh Output (Input: Harry Potter and the Chamber of Secrets)**  
+1. *El Vendedor De Noticias (Espasa Juvenil)*  
+2. *Vieja Sirena, La*
 
 ---
 
@@ -116,9 +127,9 @@ Untuk judul **Harry Potter and the Chamber of Secrets (Book 2)**:
 ### a. Evaluasi SVD
 
 Metrik evaluasi:
-- **RMSE**: 1.6399
-- **Precision@5**: 0.7062
-- **Recall@5**: 0.7025
+- **RMSE**: 1.6397
+- **Precision@5**: 0.7063
+- **Recall@5**: 0.7024
 
 ### b. Evaluasi Content-Based Filtering
 

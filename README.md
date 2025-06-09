@@ -80,6 +80,10 @@ Dataset terdiri dari tiga file utama:
 - Menginisialisasi objek Reader dengan rentang nilai rating.
 - Menggunakan Dataset.load_from_df untuk membentuk dataset dari DataFrame.
 - Membagi data menjadi data latih dan data uji menggunakan train_test_split.
+- Mengganti nama kolom pada dataset `books` dan `users` agar konsisten dan mudah digunakan dalam pemodelan.
+- Membuat fitur baru `combined_features` dari penggabungan `title` dan `author`, yang digunakan sebagai representasi konten buku untuk sistem Content-Based Filtering.
+- Mengubah fitur `combined_features` ke dalam bentuk representasi numerik menggunakan **TF-IDF Vectorizer**, lalu menghitung kemiripan antar buku menggunakan **cosine similarity**.
+
 
 ---
 
@@ -116,9 +120,13 @@ Content-Based Filtering merekomendasikan buku berdasarkan kemiripan kontennya, d
 - Pengukuran kemiripan: Cosine Similarity antar vektor TF-IDF.
 - Output: Buku-buku yang mirip dengan buku input.
 
-**Contoh Output (Input: Harry Potter and the Chamber of Secrets)**  
-1. *El Vendedor De Noticias (Espasa Juvenil)*  
-2. *Vieja Sirena, La*
+**Contoh Output (Input: Harry Potter and the Chamber of Secrets (Book 2))**  
+1. *Harry Potter and the Sorcerer's Stone (Harry Potter (Paperback))*  
+2. *Harry Potter and the Prisoner of Azkaban (Book 3)*  
+3. *Harry Potter and the Goblet of Fire (Book 4)*  
+4. *Harry Potter and the Order of the Phoenix (Book 5)*  
+5. *Harry Potter and the Half-Blood Prince (Book 6)*
+
 
 ---
 
@@ -133,7 +141,10 @@ Metrik evaluasi:
 
 ### b. Evaluasi Content-Based Filtering
 
-Evaluasi dilakukan secara manual berdasarkan kemiripan konten. Model ini cocok untuk pengguna baru (cold-start problem) karena tidak bergantung pada data rating pengguna lain.
+Evaluasi dilakukan menggunakan metrik **Precision@5** untuk mengukur relevansi dari lima rekomendasi teratas.  
+Hasil evaluasi menunjukkan nilai **Precision@5 = 1.00**, yang berarti semua rekomendasi relevan terhadap input pengguna.
+
+Model ini juga cocok untuk pengguna baru (cold-start problem), karena tidak bergantung pada histori rating pengguna lain.
 
 ---
 

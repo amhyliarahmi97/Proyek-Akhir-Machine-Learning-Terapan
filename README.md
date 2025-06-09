@@ -122,10 +122,10 @@ Content-Based Filtering merekomendasikan buku berdasarkan kemiripan kontennya, d
 
 **Contoh Output (Input: Harry Potter and the Chamber of Secrets (Book 2))**  
 1. *Harry Potter and the Sorcerer's Stone (Harry Potter (Paperback))*  
-2. *Harry Potter and the Prisoner of Azkaban (Book 3)*  
-3. *Harry Potter and the Goblet of Fire (Book 4)*  
-4. *Harry Potter and the Order of the Phoenix (Book 5)*  
-5. *Harry Potter and the Half-Blood Prince (Book 6)*
+2. *Harry Potter and the Sorcerer's Stone (Book 1))*  
+3. *Harry Potter and the Prisoner of Azkaban (Book 3)*  
+4. *Quidditch Through the Ages*  
+5. *Fantastic Beasts and Where to Find Them*
 
 
 ---
